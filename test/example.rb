@@ -1,17 +1,21 @@
+#!/usr/bin/env ruby
+require 'pry'
 require 'menuboy'
 
-Menuboy.menu('main menu') do |menu|
-  menu.option("start the stack") do
-    puts "hi"
-  end
-  menu.option("drop a database") do |dropper|
-    dropper.menu("which database?") do |db|
-      db.option("this one") do 
-        puts "sounds good"
-      end
-      db.option("that one") do
-        puts "ok"
-      end
+module StackCLI
+  extend Menuboy::DSL
+
+  menu "Main Menu" do
+    option "start the stack"  do
+      puts "hi"
     end
+    # menu "database options" do
+    #   option "drop database" do
+    #     puts "database dropped!"
+    #   end
+    #   option "seed database" do
+    #     puts "database seeded!"
+    #   end
+    # end
   end
 end
