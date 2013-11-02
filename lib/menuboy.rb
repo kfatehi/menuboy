@@ -3,14 +3,33 @@ require 'pry'
 
 module Menuboy
   module DSL
-    def option name
-      opt_count = self.options.count
-      opt = Option.new((opt_count+1).to_s, name, yield)
-      self.options.push opt
+    def option name, &block
+      opt_count = @target.options.count
+      key = (opt_count+1).to_s
+      if key.size > 1
+        raise StandardError, "You can only define 9 options per menu"
+      end
+      opt = Option.new(key, name, block)
+      @target.options.push opt
     end
 
-    def menu(name="MenuBoy!")
-      Menu.new(name, yield).start
+    def submenu name="Submenu"
+      option(name) do
+        @target = Menu.new(name)
+        yield
+        @target.start
+      end
+    end
+
+    def mainmenu(name="Main menu")
+      if @mainmenu
+        raise StandardError, "You can only define one main menu"
+      else
+        @mainmenu = Menu.new(name)
+        @target = @mainmenu
+        yield
+        @mainmenu.start
+      end
     end
   end
 
@@ -61,6 +80,4 @@ module Menuboy
       end
     end
   end
-
-
 end
