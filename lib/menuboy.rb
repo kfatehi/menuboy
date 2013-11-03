@@ -51,6 +51,7 @@ module Menuboy
         puts "#{opt.key} - #{opt.name}"
       end
       puts "p - jump into a Pry repl" if defined? Pry
+      puts "h - print help"
       puts "q - quit / go back"
     end
 
