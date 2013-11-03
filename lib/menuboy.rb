@@ -1,5 +1,4 @@
 require "menuboy/version"
-require 'pry'
 
 module Menuboy
   module DSL
