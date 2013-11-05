@@ -1,4 +1,5 @@
 require "menuboy/version"
+require 'io/console'
 
 module Menuboy
   module DSL
