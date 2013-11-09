@@ -1,7 +1,54 @@
 require "menuboy/version"
 require 'io/console'
+require 'termios'
+require 'eventmachine'
+
 
 module Menuboy
+  @termios_normal_attributes = Termios.tcgetattr($stdin).dup
+
+  def self.raw_terminal
+    attributes = @termios_normal_attributes.dup
+    attributes.lflag &= ~Termios::ECHO
+    attributes.lflag &= ~Termios::ICANON
+    Termios::tcsetattr($stdin, Termios::TCSANOW, attributes)
+  end
+
+  def self.normal_terminal
+    Termios::tcsetattr($stdin, Termios::TCSANOW, @termios_normal_attributes)
+  end
+
+  module UnbufferedKeyboardHandler
+    def receive_data(k)
+      puts k
+      menu = Menuboy.menus.last
+      if k == "q"
+        Menuboy.menus.pop
+        if next_menu = Menuboy.menus.last
+          next_menu.print_help
+        else
+          exit # no more menus
+        end
+      else
+        menu.handle_input(k)
+      end
+      Menuboy.menus.last.prompt
+    end
+  end
+
+  ##
+  # Use this if you need to re-enable buffering
+  # as menuboy disables this by default on STDIN
+  def self.fix_stdin
+    self.normal_terminal
+    yield
+    self.raw_terminal
+  end
+
+  def self.menus
+    @menus ||= []
+  end
+
   module DSL
     def option name, &block
       opt_count = @target.options.count
@@ -17,7 +64,8 @@ module Menuboy
       option(name) do
         @target = Menu.new(name)
         yield
-        @target.start
+        Menuboy.menus.push @target
+        @target.print_help
       end
     end
 
@@ -25,10 +73,18 @@ module Menuboy
       if @mainmenu
         raise StandardError, "You can only define one main menu"
       else
-        @mainmenu = Menu.new(name)
-        @target = @mainmenu
+        @target = @mainmenu = Menu.new(name)
         yield
-        @mainmenu.start
+        Menuboy.menus.push @target
+        @target.print_help
+        @target.prompt
+
+        Signal.trap("INT") { exit }
+
+        EM.run do
+          Menuboy.raw_terminal
+          EM.open_keyboard(UnbufferedKeyboardHandler)
+        end
       end
     end
   end
@@ -61,24 +117,23 @@ module Menuboy
       matches.length == 1 ? matches.last : false
     end
 
-    def start
-      print_help
-      loop do
-        print "(#{@name})> "
-        input = STDIN.getch
-        puts input
-        if input == CTRL_C || input == "q"
-          break
-        elsif input == "h"
-          print_help
-        elsif input == "p" && defined? Pry
+    def handle_input k
+      if k == "h"
+        print_help
+      elsif k == "p" && defined? Pry
+        Menuboy.fix_stdin do
           binding.pry
-        elsif option = option_match?(input)
-          option.proc.call
-        else
-          puts "Unassigned input"
         end
+      elsif option = option_match?(k)
+        option.proc.call
+      else
+        puts "Unassigned input"
       end
+    end
+
+    def prompt
+      print "(#{@name})> "
     end
   end
 end
+
