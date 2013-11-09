@@ -8,6 +8,16 @@ managing our node.js/mongodb/redis stack in a super simple way. You can
 see the basic idea of that in test/example.rb, which was used to develop
 menuboy.
 
+---
+
+### v0.1.0
+* Remove `STDIN.getch` loop approach which was causing formatting
+  issues with other programs trying to write to STDOUT
+* Use EventMachine to capture keyboard input
+* Use ruby-termios to enable raw keyboard capture
+* Provide `Menuboy#fix_stdin` public helper method to temporary re-enable
+  normal stdin behavior
+
 ## Installation
 
 Add this line to your application's Gemfile:

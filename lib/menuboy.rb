@@ -39,6 +39,8 @@ module Menuboy
   ##
   # Use this if you need to re-enable buffering
   # as menuboy disables this by default on STDIN
+  # You don't need this when using #system but
+  # you'll want it if you get user input directly
   def self.fix_stdin
     self.normal_terminal
     yield
