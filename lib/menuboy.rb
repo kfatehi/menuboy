@@ -81,7 +81,10 @@ module Menuboy
         @target.print_help
         @target.prompt
 
-        Signal.trap("INT") { exit }
+        Signal.trap("INT") {
+          Menuboy.normal_terminal
+          exit
+        }
 
         EM.run do
           Menuboy.raw_terminal

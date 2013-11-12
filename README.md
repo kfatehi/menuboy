@@ -10,6 +10,9 @@ menuboy.
 
 ---
 
+### v0.1.1
+* Fix bug where STDIN would not return to normal under linux
+
 ### v0.1.0
 * Remove `STDIN.getch` loop approach which was causing formatting
   issues with other programs trying to write to STDOUT
