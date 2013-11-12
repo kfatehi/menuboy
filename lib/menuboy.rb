@@ -81,11 +81,8 @@ module Menuboy
         @target.print_help
         @target.prompt
 
-        Signal.trap("INT") {
-          Menuboy.normal_terminal
-          exit
-        }
-
+        Signal.trap("INT") { exit }
+        at_exit { Menuboy.normal_terminal }
         EM.run do
           Menuboy.raw_terminal
           EM.open_keyboard(UnbufferedKeyboardHandler)
