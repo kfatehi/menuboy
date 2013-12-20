@@ -10,6 +10,12 @@ menuboy.
 
 ---
 
+### v0.2.0
+* Add ability to pass input from the command line.
+  e.g. `test/example.rb 2 q 2 1 1` will enter these inputs immediately
+  as though typed by the user, navigating through the menus and
+  selecting options
+
 ### v0.1.1
 * Fix bug where STDIN would not return to normal under linux
 

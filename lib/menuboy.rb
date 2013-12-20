@@ -18,21 +18,25 @@ module Menuboy
     Termios::tcsetattr($stdin, Termios::TCSANOW, @termios_normal_attributes)
   end
 
+  def self.keyboard_input k
+    puts k
+    menu = Menuboy.menus.last
+    if k == "q"
+      Menuboy.menus.pop
+      if next_menu = Menuboy.menus.last
+        next_menu.print_help
+      else
+        exit # no more menus
+      end
+    else
+      menu.handle_input(k)
+    end
+    Menuboy.menus.last.prompt
+  end
+
   module UnbufferedKeyboardHandler
     def receive_data(k)
-      puts k
-      menu = Menuboy.menus.last
-      if k == "q"
-        Menuboy.menus.pop
-        if next_menu = Menuboy.menus.last
-          next_menu.print_help
-        else
-          exit # no more menus
-        end
-      else
-        menu.handle_input(k)
-      end
-      Menuboy.menus.last.prompt
+      Menuboy.keyboard_input(k)
     end
   end
 
@@ -86,6 +90,9 @@ module Menuboy
         EM.run do
           Menuboy.raw_terminal
           EM.open_keyboard(UnbufferedKeyboardHandler)
+          ARGV.each do |input|
+            Menuboy.keyboard_input(input)
+          end
         end
       end
     end
